@@ -60,7 +60,7 @@ public final class Immortal implements Runnable {
       synchronized (other) {
         if (this.health <= 0 || other.health <= 0) return;
         other.health -= this.damage;
-        this.health += this.damage / 2;
+        this.health += this.damage;  // Mantener invariante: suma cero
         scoreBoard.recordFight();
       }
     }
@@ -73,7 +73,7 @@ public final class Immortal implements Runnable {
       synchronized (second) {
         if (this.health <= 0 || other.health <= 0) return;
         other.health -= this.damage;
-        this.health += this.damage / 2;
+        this.health += this.damage;  // Mantener invariante: suma cero
         scoreBoard.recordFight();
       }
     }

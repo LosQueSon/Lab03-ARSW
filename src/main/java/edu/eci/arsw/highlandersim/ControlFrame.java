@@ -76,17 +76,56 @@ public final class ControlFrame extends JFrame {
   private void onPauseAndCheck(ActionEvent e) {
     if (manager == null) return;
     manager.pause();
+    
+    // Esperar a que todos los hilos se pasen (dar tiempo de sincronización)
+    try {
+      int aliveCount = manager.aliveCount();
+      manager.controller().waitUntilPaused(aliveCount, 500);
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
+    }
+    
     List<Immortal> pop = manager.populationSnapshot();
     long sum = 0;
+    int alive = 0;
+    int dead = 0;
     StringBuilder sb = new StringBuilder();
+    
+    // Calcular estadísticas
     for (Immortal im : pop) {
       int h = im.getHealth();
       sum += h;
-      sb.append(String.format("%-14s : %5d%n", im.name(), h));
+      if (h > 0) alive++;
+      else dead++;
     }
-    sb.append("--------------------------------\n");
+    
+    // Mostrar lista completa si hay pocos, o resumen si hay muchos
+    if (pop.size() <= 100) {
+      for (Immortal im : pop) {
+        int h = im.getHealth();
+        sb.append(String.format("%-14s : %5d%n", im.name(), h));
+      }
+    } else {
+      sb.append("Showing summary for ").append(pop.size()).append(" immortals\n");
+      sb.append("(First 50 shown)\n\n");
+      for (int i = 0; i < Math.min(50, pop.size()); i++) {
+        Immortal im = pop.get(i);
+        int h = im.getHealth();
+        sb.append(String.format("%-14s : %5d%n", im.name(), h));
+      }
+      if (pop.size() > 50) {
+        sb.append("... (" + (pop.size() - 50) + " more)\n");
+      }
+    }
+    
+    sb.append("================================\n");
+    sb.append("Alive: ").append(alive).append(" | Dead: ").append(dead).append('\n');
     sb.append("Total Health: ").append(sum).append('\n');
+    int expectedTotal = (Integer) countSpinner.getValue() * (Integer) healthSpinner.getValue();
+    sb.append("Expected Total: ").append(expectedTotal).append('\n');
+    sb.append("Invariant: ").append(sum == expectedTotal ? "✓ OK" : "✗ BROKEN").append('\n');
     sb.append("Score (fights): ").append(manager.scoreBoard().totalFights()).append('\n');
+    sb.append("Paused threads: ").append(manager.controller().getPausedThreadCount()).append('\n');
     output.setText(sb.toString());
   }
 

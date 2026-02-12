@@ -5,12 +5,14 @@ import edu.eci.arsw.concurrency.PauseController;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public final class ImmortalManager implements AutoCloseable {
-  private final List<Immortal> population = new ArrayList<>();
+  private final List<Immortal> population = new CopyOnWriteArrayList<>();
   private final List<Future<?>> futures = new ArrayList<>();
   private final PauseController controller = new PauseController();
   private final ScoreBoard scoreBoard = new ScoreBoard();
@@ -45,7 +47,17 @@ public final class ImmortalManager implements AutoCloseable {
   public void resume() { controller.resume(); }
   public void stop() {
     for (Immortal im : population) im.stop();
-    if (exec != null) exec.shutdownNow();
+    if (exec != null) {
+      exec.shutdownNow();
+      try {
+        if (!exec.awaitTermination(5, TimeUnit.SECONDS)) {
+          System.err.println("Warning: Some threads did not terminate in time");
+        }
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+      exec = null;
+    }
   }
 
   public int aliveCount() {
