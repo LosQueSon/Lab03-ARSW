@@ -54,7 +54,9 @@ public final class Immortal implements Runnable {
    * 
    * @return nombre identificador
    */
-  public String name() { return name; }
+  public String getName() { return name; }
+
+  public int getDamage() { return damage; }
   
   /**
    * Obtiene la salud actual del inmortal de forma thread-safe.

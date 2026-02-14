@@ -11,6 +11,6 @@ public final class BankAccount {
   public long id() { return id; }
   public long balance() { return balance; }
   public ReentrantLock lock() { return lock; }
-  void depositInternal(long amount) { balance += amount; }
-  void withdrawInternal(long amount) { balance -= amount; }
+  public void depositInternal(long amount) { balance += amount; }
+  public void withdrawInternal(long amount) { balance -= amount; }
 }

@@ -119,7 +119,7 @@ public final class ControlFrame extends JFrame {
     if (pop.size() <= 100) {
       for (Immortal im : pop) {
         int h = im.getHealth();
-        sb.append(String.format("%-14s : %5d%n", im.name(), h));
+        sb.append(String.format("%-14s : %5d%n", im.getName(), h));
       }
     } else {
       sb.append("Showing summary for ").append(pop.size()).append(" immortals\n");
@@ -127,7 +127,7 @@ public final class ControlFrame extends JFrame {
       for (int i = 0; i < Math.min(50, pop.size()); i++) {
         Immortal im = pop.get(i);
         int h = im.getHealth();
-        sb.append(String.format("%-14s : %5d%n", im.name(), h));
+        sb.append(String.format("%-14s : %5d%n", im.getName(), h));
       }
       if (pop.size() > 50) {
         sb.append("... (" + (pop.size() - 50) + " more)\n");
