@@ -40,7 +40,7 @@ public final class PauseController {
    */
   public void resume() { lock.lock(); try { paused = false; unpaused.signalAll(); } finally { lock.unlock(); } }
   
-  public boolean paused() { return paused; }
+  public boolean isPaused() { return paused; }
   
   /**
    * Obtiene el número de hilos actualmente pausados.
