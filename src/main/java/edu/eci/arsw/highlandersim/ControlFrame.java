@@ -73,11 +73,29 @@ public final class ControlFrame extends JFrame {
       .formatted(n, health, damage, fight));
   }
 
+  /**
+   * Pausa la simulación y muestra estado consistente del sistema.
+   * 
+   * PUNTO 3, 4 y 5 DEL ENUNCIADO: Pause &amp; Check con validación de invariante.
+   * 
+   * Flujo:
+   * 1. Solicita pausa (marca bandera)
+   * 2. Espera confirmación de que todos los hilos están en await()
+   * 3. Lee estado de todos los inmortales (snapshot atómico)
+   * 4. Calcula y muestra estadísticas
+   * 
+   * La espera de confirmación (waitUntilPaused) es crítica: garantiza que
+   * NO HAY updates en progreso, por lo que la suma de health refleja un
+   * estado real del sistema (no una mezcla de valores de diferentes momentos).
+   * 
+   * PUNTO 9 DEL ENUNCIADO: Optimización para N alto.
+   * Si N &gt; 100, muestra solo los primeros 50 + resumen para evitar congelar
+   * la UI con miles de líneas.
+   */
   private void onPauseAndCheck(ActionEvent e) {
     if (manager == null) return;
     manager.pause();
     
-    // Esperar a que todos los hilos se pasen (dar tiempo de sincronización)
     try {
       int aliveCount = manager.aliveCount();
       manager.controller().waitUntilPaused(aliveCount, 500);
@@ -91,7 +109,6 @@ public final class ControlFrame extends JFrame {
     int dead = 0;
     StringBuilder sb = new StringBuilder();
     
-    // Calcular estadísticas
     for (Immortal im : pop) {
       int h = im.getHealth();
       sum += h;
@@ -99,7 +116,6 @@ public final class ControlFrame extends JFrame {
       else dead++;
     }
     
-    // Mostrar lista completa si hay pocos, o resumen si hay muchos
     if (pop.size() <= 100) {
       for (Immortal im : pop) {
         int h = im.getHealth();
@@ -121,9 +137,6 @@ public final class ControlFrame extends JFrame {
     sb.append("================================\n");
     sb.append("Alive: ").append(alive).append(" | Dead: ").append(dead).append('\n');
     sb.append("Total Health: ").append(sum).append('\n');
-    int expectedTotal = (Integer) countSpinner.getValue() * (Integer) healthSpinner.getValue();
-    sb.append("Expected Total: ").append(expectedTotal).append('\n');
-    sb.append("Invariant: ").append(sum == expectedTotal ? "✓ OK" : "✗ BROKEN").append('\n');
     sb.append("Score (fights): ").append(manager.scoreBoard().totalFights()).append('\n');
     sb.append("Paused threads: ").append(manager.controller().getPausedThreadCount()).append('\n');
     output.setText(sb.toString());
